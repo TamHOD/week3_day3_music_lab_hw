@@ -5,6 +5,7 @@ require_relative("../db/sql_runner")
 class Album
 
   attr_reader :title, :genre, :artist_id, :id
+  attr_writer :title
 
   def initialize(options)
     @id = options['id'].to_i if options['id']
@@ -38,6 +39,26 @@ class Album
     artist_album = results[0]
     artist = Artist.new(artist_album)
     return artist
+  end
+
+  def update()
+    sql = "UPDATE albums SET (title, genre, artist_id) = ($1,$2,$3) WHERE id = $4;"
+    values = [@title, @genre, @artist_id, @id]
+    SqlRunner.run(sql, values)
+  end
+
+  def delete()
+    sql = "DELETE FROM albums WHERE id = $1"
+    values = [@id]
+    SqlRunner.run(sql, values)
+  end
+
+  def self.find_by_id(id)
+    sql = "SELECT * FROM albums WHERE id = $1"
+    values = [id]
+    hash = SqlRunner.run(sql, values)
+    album = hash.map {|album_hash| Album.new(album_hash)}
+    return album
   end
 
   def self.delete_all
